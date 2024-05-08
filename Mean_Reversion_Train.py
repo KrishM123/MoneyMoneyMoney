@@ -49,7 +49,7 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
     y = np.array(y)
     prices = prices[MAX_HOLDING - LONGEST_SMA:len(prices) - MAX_HOLDING]
 
-    x_train, x_test, y_train, y_test = train_test_split(x[:round(len(x))], y[:round(len(y))], test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
     def create_model():
         return tf.keras.models.Sequential([
@@ -71,10 +71,4 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
           epochs=50, 
           validation_data=(x_test, y_test), 
         )
-    if not os.path.exists(MODEL_PATH):
-        os.makedirs(MODEL_PATH)
-    else:
-        shutil.rmtree(MODEL_PATH)
-        os.makedirs(MODEL_PATH)
-    model.save(MODEL_PATH)
-    model.save_weights(MODEL_PATH)
+    return model
