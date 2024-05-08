@@ -21,3 +21,18 @@ def get_sd(prices, time):
             summa += (prices.iloc[pos1 + change] - mean) ** 2
         sd.append(math.sqrt(summa / time))
     return sd
+
+def normalize_forward(old_answer):
+    answer = old_answer.copy()
+    dp_factors = [answer[0]]
+    for pos in range(1, len(answer)):
+        dp_factors.append(max(abs(answer[pos]), abs(dp_factors[-1])))
+        answer[pos] /= dp_factors[pos]
+    answer[0] = 1
+    return answer
+
+def normalize_average(prices):
+    normalized_prices = [prices[0:int(MAX_HOLDING/2)]]
+    for pos in range(MAX_HOLDING/2, len(prices) - MAX_HOLDING/2):
+        normalized_prices.append(prices[pos] / (max(prices[pos - MAX_HOLDING/2:pos + MAX_HOLDING/2])))
+    return normalized_prices
