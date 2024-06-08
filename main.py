@@ -1,6 +1,5 @@
 from Mean_Reversion_Test import *
 from Mean_Reversion_Train import *
-from Account import *
 import yfinance as yf
 import matplotlib.pyplot as plt
 
