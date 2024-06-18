@@ -1,8 +1,5 @@
-import yfinance as yf
-import math
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import os
 from util import *
@@ -13,7 +10,7 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
     for pos1 in range(len(training_prices) - MAX_HOLDING):
         ans = 0
         for pos2 in range(1, MAX_HOLDING):
-            ans += (training_prices.iloc[pos1 + pos2] - training_prices.iloc[pos1]) * time_effect1(MAX_HOLDING, pos2)
+            ans += (training_prices.iloc[pos1 + pos2] - training_prices.iloc[pos1]) * time_effect3(MAX_HOLDING, pos2)
         answer.append(ans)
 
     answer = normalize_average(answer, MAX_HOLDING * 2)
@@ -48,6 +45,7 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
             tf.keras.layers.Flatten(input_shape=(8,), name='layers_flatten'),
             tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(256, activation='relu'),
             tf.keras.layers.Dense(256, activation='relu'),
             tf.keras.layers.Dense(128, activation='relu'),
             tf.keras.layers.Dense(64, activation='relu'),

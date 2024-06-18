@@ -65,11 +65,13 @@ packaging==24.0
 pandas==2.2.2
 parso==0.8.4
 peewee==3.17.5
+pexpect==4.9.0
 pillow==10.3.0
 platformdirs==4.2.2
 prompt-toolkit==3.0.43
 protobuf==4.25.3
 psutil==5.9.8
+ptyprocess==0.7.0
 pure-eval==0.2.2
 pydantic==2.7.2
 pydantic_core==2.18.3
@@ -77,7 +79,6 @@ Pygments==2.18.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 pytz==2024.1
-pywin32==306
 pyzmq==26.0.3
 regex==2024.5.15
 requests==2.31.0
@@ -91,7 +92,6 @@ stack-data==0.6.3
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
 tensorflow==2.16.1
-tensorflow-intel==2.16.1
 tensorflow-io-gcs-filesystem==0.31.0
 termcolor==2.4.0
 threadpoolctl==3.5.0

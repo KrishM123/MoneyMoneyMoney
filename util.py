@@ -56,6 +56,15 @@ time_effect2 = lambda L, x: L/(x+L)
 time_effect3 = lambda L, x: (-1/(L**2))(x**2)+1
 time_effect3 = lambda L, x: -1/((x-L)**2)
 
+inverse_time_effect1 = lambda L, x: min(100, max(L(1-x), 0))
+inverse_time_effect2 = lambda L, x: min(100, max((L/x) - L, 0))
+def inverse_time_effect3(L, x):
+    try:
+        return min(100, math.sqrt((1-x) * L**2))
+    except ValueError:
+        return 0
+inverse_time_effect4 = lambda L, x: min(max(L - math.sqrt((L**2) * x), 0), 100)
+
 class Account():
     def __init__(self, balance):
         self.balance = balance
@@ -68,21 +77,21 @@ class Account():
         if stock.price * quantity > self.balance:
             stock.add_holding(round(self.balance / stock.price, 3))
             self.balance -= round(stock.price * (self.balance / stock.price), 3)
-            print("Bought ", round(self.balance / stock.price, 3), " shares of ", stock.name, " for ", self.balance, " dollars.")
+            #print("Bought ", round(self.balance / stock.price, 3), " shares of ", stock.name, " for ", self.balance, " dollars.")
         else:
             self.balance -= stock.price * quantity
             stock.add_holding(quantity)
-            print("Bought ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
+            #print("Bought ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
 
     def sell(self, stock, quantity):
         if quantity > stock.holding:
             self.balance += stock.price * stock.holding
             stock.remove_holding(stock.holding)
-            print("Sold ", stock.holding, " shares of ", stock.name, " for ", stock.price * stock.holding, " dollars.")
+            #print("Sold ", stock.holding, " shares of ", stock.name, " for ", stock.price * stock.holding, " dollars.")
         else:
             self.balance += stock.price * quantity
             stock.remove_holding(quantity)
-            print("Sold ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
+            #print("Sold ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
 
 
     def net_worth(self):

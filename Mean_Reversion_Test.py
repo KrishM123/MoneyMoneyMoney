@@ -1,12 +1,7 @@
-import yfinance as yf
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt
 from util import *
 from Mean_Reversion_Train import *
-import os
-import shutil
 
 
 def test(MODEL_PATH, testing_prices, MAX_HOLDING=100):
