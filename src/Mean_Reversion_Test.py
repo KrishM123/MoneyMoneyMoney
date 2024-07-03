@@ -1,7 +1,6 @@
 import numpy as np
 from tensorflow import keras
 from util import *
-from Mean_Reversion_Train import *
 
 
 def test(MODEL_PATH, testing_prices, MAX_HOLDING=100):

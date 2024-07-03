@@ -1,5 +1,4 @@
 from util import *
-import pandas as pd
 
 
 def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, account, stocks, testing_prices, predictions):
