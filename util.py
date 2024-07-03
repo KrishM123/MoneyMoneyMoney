@@ -66,32 +66,29 @@ def inverse_time_effect3(L, x):
 inverse_time_effect4 = lambda L, x: min(max(L - math.sqrt((L**2) * x), 0), 100)
 
 class Account():
-    def __init__(self, balance):
-        self.balance = balance
+    def __init__(self):
+        self.balance = 0
         self.holdings = []
+        self.min_balance = 0
 
 
     def buy(self, stock, quantity):
         if stock not in self.holdings:
             self.holdings.append(stock)
-        if stock.price * quantity > self.balance:
-            stock.add_holding(round(self.balance / stock.price, 3))
-            self.balance -= round(stock.price * (self.balance / stock.price), 3)
-            #print("Bought ", round(self.balance / stock.price, 3), " shares of ", stock.name, " for ", self.balance, " dollars.")
-        else:
-            self.balance -= stock.price * quantity
-            stock.add_holding(quantity)
-            #print("Bought ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
+        self.balance -= stock.price * quantity
+        self.min_balance = min(self.balance, self.min_balance)
+        stock.add_holding(quantity)
+        # print("Bought ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
 
     def sell(self, stock, quantity):
         if quantity > stock.holding:
             self.balance += stock.price * stock.holding
             stock.remove_holding(stock.holding)
-            #print("Sold ", stock.holding, " shares of ", stock.name, " for ", stock.price * stock.holding, " dollars.")
+            # print("Sold ", stock.holding, " shares of ", stock.name, " for ", stock.price * stock.holding, " dollars.")
         else:
             self.balance += stock.price * quantity
             stock.remove_holding(quantity)
-            #print("Sold ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
+            # print("Sold ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
 
 
     def net_worth(self):
