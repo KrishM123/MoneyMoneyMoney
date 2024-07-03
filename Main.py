@@ -7,6 +7,10 @@ import pandas as pd
 import json
 import copy
 
+TRAIN_DATE = pd.Timestamp('2022-01-01')
+MAX_HOLDING = 100
+MAX_TRANSACTION = 10000
+
 with open('snp.json', 'r') as f:
     snp_500_tickers = json.load(f)
 
@@ -20,9 +24,9 @@ for ticker in snp_500_tickers:
     starting_market_cap[ticker] = yf.Ticker(ticker).info['marketCap']
     historic_price[ticker] = download['Adj Close']
 
-TRAIN_DATE = pd.Timestamp('2022-01-01')
-MAX_HOLDING = 100
 
+
+failed_tickers = []
 for TICKER in historic_price.keys():
     try:
         if TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras" not in os.listdir('Models/'):
@@ -33,7 +37,12 @@ for TICKER in historic_price.keys():
             print("Trained model for ", TICKER, ". Finished " + str(list(historic_price.keys()).index(TICKER) + 1) + " out of " + str(len(historic_price.keys()) + 1) + " models.")
     except:
         print("Failed to train model for ", TICKER)
+        failed_tickers.append(TICKER)
         pass
+
+with open('failed_tickers.json', 'w') as f:
+    json.dump(failed_tickers, f)
+
 
 predictions = {}
 testing_prices = {}
@@ -44,7 +53,6 @@ for TICKER in historic_price.keys():
 testing_prices_for_base = copy.deepcopy(testing_prices)
 
 
-MAX_TRANSACTION = 10000
 account = Account()
 stocks = {}
 for TICKER in historic_price.keys():
