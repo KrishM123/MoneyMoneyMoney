@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import os
-from util import *
+from src.util import *
 
 
 def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
