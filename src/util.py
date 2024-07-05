@@ -1,4 +1,5 @@
 import math
+import json
 
 def get_sma(prices, MA):
     sma = []
@@ -56,14 +57,10 @@ time_effect2 = lambda L, x: L/(x+L)
 time_effect3 = lambda L, x: (-1/(L**2))(x**2)+1
 time_effect3 = lambda L, x: -1/((x-L)**2)
 
-inverse_time_effect1 = lambda L, x: min(100, max(L(1-x), 0))
-inverse_time_effect2 = lambda L, x: min(100, max((L/x) - L, 0))
-def inverse_time_effect3(L, x):
-    try:
-        return min(100, math.sqrt((1-x) * L**2))
-    except ValueError:
-        return 0
-inverse_time_effect4 = lambda L, x: min(max(L - math.sqrt((L**2) * x), 0), 100)
+inverse_time_effect1 = lambda L, x: min(L, max(L(1-x), 0))
+inverse_time_effect2 = lambda L, x: min(L, max((L/x) - L, 0))
+inverse_time_effect3 = lambda L, x: L * (x ** 2)
+inverse_time_effect4 = lambda L, x: min(max(L - math.sqrt((L**2) * x), 0), L)
 
 class Account():
     def __init__(self):
@@ -78,18 +75,10 @@ class Account():
         self.balance -= stock.price * quantity
         self.min_balance = min(self.balance, self.min_balance)
         stock.add_holding(quantity)
-        # print("Bought ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
 
     def sell(self, stock, quantity):
-        if quantity > stock.holding:
-            self.balance += stock.price * stock.holding
-            stock.remove_holding(stock.holding)
-            # print("Sold ", stock.holding, " shares of ", stock.name, " for ", stock.price * stock.holding, " dollars.")
-        else:
-            self.balance += stock.price * quantity
-            stock.remove_holding(quantity)
-            # print("Sold ", quantity, " shares of ", stock.name, " for ", stock.price * quantity, " dollars.")
-
+        self.balance += stock.price * quantity
+        stock.remove_holding(quantity)
 
     def net_worth(self):
         return self.balance + sum([(stock.price * stock.holding) for stock in self.holdings])
