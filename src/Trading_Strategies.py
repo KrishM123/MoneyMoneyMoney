@@ -19,11 +19,11 @@ def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, accoun
                 account.buy(stock, round(abs((MAX_TRANSACTION / stock.price) * predictions[ticker][pos][0]), 3))
                 sell_orders[str([int(inverse_time_effect3(MAX_HOLDING, predictions[ticker][pos][0])) + pos, ticker])] = [ticker, round(abs((MAX_TRANSACTION / stock.price) * math.sqrt(predictions[ticker][pos][0])), 3)]
 
-            elif float(predictions[ticker][pos][0]) < -0.5:
-                if verbose:
-                    print('Shorted ', ticker, 'at', stock.price, 'on', list(testing_prices[list(testing_prices.keys())[0]].keys())[pos])
-                account.sell(stock, round(abs((MAX_TRANSACTION / stock.price) * abs(predictions[ticker][pos][0])), 3))
-                cover_orders[str([int(inverse_time_effect3(MAX_HOLDING, abs(predictions[ticker][pos][0]))) + pos, ticker])] = [ticker, round(abs((MAX_TRANSACTION / stock.price) * math.sqrt(abs(predictions[ticker][pos][0]))), 3)]
+            # elif float(predictions[ticker][pos][0]) < -0.5:
+            #     if verbose:
+            #         print('Shorted ', ticker, 'at', stock.price, 'on', list(testing_prices[list(testing_prices.keys())[0]].keys())[pos])
+            #     account.sell(stock, round(abs((MAX_TRANSACTION / stock.price) * abs(predictions[ticker][pos][0])), 3))
+            #     cover_orders[str([int(inverse_time_effect3(MAX_HOLDING, abs(predictions[ticker][pos][0]))) + pos, ticker])] = [ticker, round(abs((MAX_TRANSACTION / stock.price) * math.sqrt(abs(predictions[ticker][pos][0]))), 3)]
 
         # Lets hope the same stock doesn't have two sell or cover orders on the same day
         if str([pos, ticker]) in sell_orders.keys():

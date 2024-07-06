@@ -35,7 +35,7 @@ def main():
         
     small_snp_500_tickers = ["AAPL", "MSFT", "JNJ", "GOOG", "PG"]
     if args.snp_500:
-        with open('snp.json', 'r') as f:
+        with open('data/snp.json', 'r') as f:
             tickers = json.load(f)
     elif args.small_snp_500:
         tickers = small_snp_500_tickers
@@ -72,17 +72,20 @@ def main():
 
     predictions = {}
     testing_prices = {}
+    failed_tickers = []
     for TICKER in historic_price.keys():
         try:
             testing_prices[TICKER] = historic_price[TICKER][TRAIN_DATE:]
             predictions[TICKER] = test("Models/" + TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras", testing_prices[TICKER])
             testing_prices[TICKER] = testing_prices[TICKER][MAX_HOLDING:]
         except:
-            testing_prices.pop(TICKER)
-            historic_price.pop(TICKER)
+            failed_tickers.append(TICKER)
             print("No model exists for ", TICKER)
             pass
 
+    for ticker in failed_tickers:
+        historic_price.pop(ticker)
+        starting_market_cap.pop(ticker)
 
     account = Account()
     stocks = {}
