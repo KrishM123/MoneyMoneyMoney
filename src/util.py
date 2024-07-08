@@ -1,5 +1,8 @@
 import math
 import json
+import requests
+from dotenv import load_dotenv
+import os
 
 def get_sma(prices, MA):
     sma = []
@@ -99,9 +102,80 @@ class Stock():
         self.holding -= quantity
 
 
-def parse():
+def parse_snp_tickers():
     table = open('slickcharts.txt', 'r').read().split('<th scope="col">% Chg</th>')[1].split('</tbody>')[0].split('<tbody>')[1].split('<tr>')[1:]
     tickers = [x.split('/symbol/')[1].split('"')[0].replace(".", "-") for x in table]
 
     with open('snp.json', 'w') as f:
         json.dump(tickers, f)
+
+    
+def get_market_cap(START_DATE, tickers):
+    START_DATE = START_DATE.strftime('%Y-%m-%d')
+    load_dotenv()
+    api_key1 = os.getenv('FMP_API_KEY1')
+    api_key2 = os.getenv('FMP_API_KEY2')
+    api_key3 = os.getenv('FMP_API_KEY3')
+    api_key4 = os.getenv('FMP_API_KEY4')
+    api_key5 = os.getenv('FMP_API_KEY5')
+
+    url = f'https://financialmodelingprep.com/api/v3/historical-market-capitalization/'
+
+
+    market_cap = {}
+    
+    api = api_key1
+    for ticker in tickers:
+        try:
+            response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
+            market_cap[ticker] = [int(x['marketCap']) for x in response]
+        except:
+            if api == api_key1:
+                api = api_key2
+            else:
+                api = api_key3
+            response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
+            market_cap[ticker] = [int(x['marketCap']) for x in response]
+    with open('data/market_cap.json', 'w') as f:
+        json.dump(market_cap, f)
+            
+    return market_cap
+
+
+def get_market_cap2(START_DATE, tickers):
+    load_dotenv()
+    api_key1 = os.getenv('FMP_API_KEY1')
+    api_key2 = os.getenv('FMP_API_KEY2')
+    api_key3 = os.getenv('FMP_API_KEY3')
+    api_key4 = os.getenv('FMP_API_KEY4')
+
+    url = f'https://financialmodelingprep.com/api/v3/historical-market-capitalization/'
+
+
+    market_cap = []
+    
+    api = api_key1
+    for ticker in tickers:
+        response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
+        if ("Error Message" in response):
+            if api == api_key1:
+                print("changed to api key 2")
+                api = api_key2
+            elif api == api_key2:
+                print("changed to api key 3")
+                api = api_key3
+            elif api == api_key3:
+                print("changed to api key 4")
+                api = api_key4
+            response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
+        market_cap.append(response)
+    with open('data/market_cap.json', 'w') as f:
+        json.dump(market_cap, f)
+            
+    return market_cap
+
+
+def read_market_cap():
+    file = json.load(open('data/market_cap.json', 'r'))
+    print(file[0][0]['date'], file[0][-1]['date'])
+    

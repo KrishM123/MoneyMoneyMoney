@@ -34,15 +34,9 @@ def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, accoun
         net_worth.append(account.net_worth())
     return net_worth
 
-def base_return(account, stocks, testing_prices, starting_market_cap, MAX_TRANSACTION):
-    max_market_cap = max(starting_market_cap.values())
-    for ticker in stocks.keys():
-        to_spend = MAX_TRANSACTION * (starting_market_cap[ticker] / max_market_cap)
-        stocks[ticker].update_price(testing_prices[ticker].iloc[0])
-        account.buy(stocks[ticker], to_spend / stocks[ticker].price)
 
-    initial = abs(account.balance)
-    for ticker in stocks.keys():
-        stocks[ticker].update_price(testing_prices[ticker].iloc[-1])
 
-    return ((account.net_worth()) / initial) * 100
+def base_return(market_cap):
+    final = sum([market_cap[ticker][0] for ticker in market_cap.keys()])
+    initial = sum([market_cap[ticker][-1] for ticker in market_cap.keys()])
+    return ((final - initial) / initial) * 100

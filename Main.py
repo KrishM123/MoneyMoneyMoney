@@ -13,6 +13,7 @@ from src.util import *
 
 def main():
     TRAIN_DATE = pd.Timestamp('2022-01-01')
+    print(TRAIN_DATE)
     MAX_HOLDING = 100
     MAX_TRANSACTION = 10000
 
@@ -23,13 +24,14 @@ def main():
     set_of_stocks.add_argument('--small_snp_500', action='store_true', help='Use a small subset of S&P 500 companies as the set of stocks.')
     set_of_stocks.add_argument('--single_company', type=str, help='Use a custom set of stocks.')
     parser.add_argument('--train', action='store_true', help='Retrain the models.')
-    parser.add_argument('--parse', action='store_true', help='Parse the S&P 500 companies.')
+    parser.add_argument('--parse_snp_tickers', action='store_true', help='Parse the S&P 500 companies.')
     parser.add_argument('--verbose', action='store_true', help='Print verbose output.')
+    parser.add_argument('--get_market_cap', action='store_true', help='Get ticker market cap (run daily).')
     args = parser.parse_args()
 
 
-    if args.parse:
-        parse()
+    if args.parse_snp_tickers:
+        parse_snp_tickers()
     if args.train_date:
         TRAIN_DATE = pd.Timestamp(args.train_date)
         
@@ -44,12 +46,10 @@ def main():
     else:
         tickers = small_snp_500_tickers
 
-    historic_price = {}
-    starting_market_cap = {}
-    for ticker in tickers:
-        download = yf.download(ticker)
-        starting_market_cap[ticker] = yf.Ticker(ticker).info['marketCap']
-        historic_price[ticker] = download['Adj Close']
+    # historic_price = {}
+    # for ticker in tickers:
+    #     download = yf.download(ticker)
+    #     historic_price[ticker] = download['Adj Close']
 
 
     if args.train:
@@ -67,48 +67,49 @@ def main():
                 failed_tickers.append(TICKER)
                 pass
 
-        with open('failed_tickers.json', 'w') as f:
+        with open('data/failed_tickers.json', 'w') as f:
             json.dump(failed_tickers, f)
 
-    predictions = {}
-    testing_prices = {}
-    failed_tickers = []
-    for TICKER in historic_price.keys():
-        try:
-            testing_prices[TICKER] = historic_price[TICKER][TRAIN_DATE:]
-            predictions[TICKER] = test("Models/" + TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras", testing_prices[TICKER])
-            testing_prices[TICKER] = testing_prices[TICKER][MAX_HOLDING:]
-        except:
-            failed_tickers.append(TICKER)
-            print("No model exists for ", TICKER)
-            pass
+    # predictions = {}
+    # testing_prices = {}
+    # failed_tickers = []
+    # for TICKER in tickers:
+    #     try:
+    #         testing_prices[TICKER] = historic_price[TICKER][TRAIN_DATE:]
+    #         predictions[TICKER] = test("Models/" + TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras", testing_prices[TICKER])
+    #         testing_prices[TICKER] = testing_prices[TICKER][MAX_HOLDING:]
+    #     except:
+    #         failed_tickers.append(TICKER)
+    #         print("No model exists for ", TICKER)
+    #         pass
 
-    for ticker in failed_tickers:
-        historic_price.pop(ticker)
-        starting_market_cap.pop(ticker)
+    # for ticker in failed_tickers:
+    #     historic_price.pop(ticker)
+    #     tickers.remove(ticker)
+    #     testing_prices.pop(ticker)
+    # with open('data/failed_tickers.json', 'w') as f:
+    #     json.dump(failed_tickers, f)
+    # get_market_cap2(TRAIN_DATE, tickers)
 
-    account = Account()
-    stocks = {}
-    for TICKER in historic_price.keys():
-        stocks[TICKER] = Stock(TICKER, testing_prices[TICKER].iloc[0])
+    market_cap = read_market_cap()
 
-
-    net_worth = trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, account, copy.deepcopy(stocks), testing_prices, predictions, args.verbose)
-
-    final = net_worth[-1] + abs(account.min_balance)
-    initial = abs(account.min_balance)
-
-    print("Total return: ", ((final - initial) / initial) * 100, "%")
-
-    print("Return if you bought shares of the companies according to market cap: ", base_return(Account(), copy.deepcopy(stocks), testing_prices, starting_market_cap, MAX_TRANSACTION), "%")
-    equal_market_cap = {}
-    for ticker in starting_market_cap.keys():
-        equal_market_cap[ticker] = 1
-    print("Return if you bought equal amout of each company: ", base_return(Account(), copy.deepcopy(stocks), testing_prices, equal_market_cap, MAX_TRANSACTION), "%")
+    # account = Account()
+    # stocks = {}
+    # for TICKER in tickers:
+    #     stocks[TICKER] = Stock(TICKER, testing_prices[TICKER].iloc[0])
 
 
-    plt.plot(testing_prices[list(testing_prices.keys())[0]].keys(), net_worth)
-    plt.show()
+    # net_worth = trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, account, copy.deepcopy(stocks), testing_prices, predictions, args.verbose)
+
+    # final = net_worth[-1] + abs(account.min_balance)
+    # initial = abs(account.min_balance)
+
+    # print("Total return: ", ((final - initial) / initial) * 100, "%")
+
+    print("Index return: ", base_return(market_cap), "%")
+
+    # plt.plot(testing_prices[list(testing_prices.keys())[0]].keys(), net_worth)
+    # plt.show()
 
 
 if __name__ == "__main__":
