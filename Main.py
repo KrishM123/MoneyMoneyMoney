@@ -13,7 +13,6 @@ from src.util import *
 
 def main():
     TRAIN_DATE = pd.Timestamp('2022-01-01')
-    print(TRAIN_DATE)
     MAX_HOLDING = 100
     MAX_TRANSACTION = 10000
 
@@ -35,7 +34,9 @@ def main():
     if args.train_date:
         TRAIN_DATE = pd.Timestamp(args.train_date)
         
-    small_snp_500_tickers = ["AAPL", "MSFT", "JNJ", "GOOG", "PG"]
+    # small_snp_500_tickers = ["AAPL", "MSFT", "JNJ", "GOOG", "PG"]
+    # small_snp_500_tickers = ["AVGO", "ALTM", "CCL", "JNUG", "META", "PLUG", "TSCO"]
+    small_snp_500_tickers = ["MMM", "NCLH", "UAL", "AAPL"]
     if args.snp_500:
         with open('data/snp.json', 'r') as f:
             tickers = json.load(f)
@@ -46,10 +47,10 @@ def main():
     else:
         tickers = small_snp_500_tickers
 
-    # historic_price = {}
-    # for ticker in tickers:
-    #     download = yf.download(ticker)
-    #     historic_price[ticker] = download['Adj Close']
+    historic_price = {}
+    for ticker in tickers:
+        download = yf.download(ticker)
+        historic_price[ticker] = download['Adj Close']
 
 
     if args.train:
@@ -67,49 +68,54 @@ def main():
                 failed_tickers.append(TICKER)
                 pass
 
-        with open('data/failed_tickers.json', 'w') as f:
-            json.dump(failed_tickers, f)
 
-    # predictions = {}
-    # testing_prices = {}
-    # failed_tickers = []
-    # for TICKER in tickers:
-    #     try:
-    #         testing_prices[TICKER] = historic_price[TICKER][TRAIN_DATE:]
-    #         predictions[TICKER] = test("Models/" + TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras", testing_prices[TICKER])
-    #         testing_prices[TICKER] = testing_prices[TICKER][MAX_HOLDING:]
-    #     except:
-    #         failed_tickers.append(TICKER)
-    #         print("No model exists for ", TICKER)
-    #         pass
+    predictions = {}
+    testing_prices = {}
+    failed_tickers = []
+    for TICKER in tickers:
+        try:
+            testing_prices[TICKER] = historic_price[TICKER][TRAIN_DATE:]
+            predictions[TICKER] = test("Models/" + TICKER + "_" + TRAIN_DATE.strftime('%Y-%m-%d') + ".keras", testing_prices[TICKER])
+            testing_prices[TICKER] = testing_prices[TICKER][MAX_HOLDING:]
+        except:
+            failed_tickers.append(TICKER)
+            print("No model exists for ", TICKER)
+            pass
 
-    # for ticker in failed_tickers:
-    #     historic_price.pop(ticker)
-    #     tickers.remove(ticker)
-    #     testing_prices.pop(ticker)
-    # with open('data/failed_tickers.json', 'w') as f:
-    #     json.dump(failed_tickers, f)
-    # get_market_cap2(TRAIN_DATE, tickers)
+    for ticker in failed_tickers:
+        historic_price.pop(ticker)
+        tickers.remove(ticker)
+        testing_prices.pop(ticker)
+    with open('data/failed_tickers.json', 'w') as f:
+        json.dump(failed_tickers, f)
 
-    market_cap = read_market_cap()
+    if args.get_market_cap:
+        get_market_cap(TRAIN_DATE + pd.Timedelta(days=MAX_HOLDING), tickers)
+    market_cap = json.load(open('data/market_cap.json', 'r'))
 
-    # account = Account()
-    # stocks = {}
-    # for TICKER in tickers:
-    #     stocks[TICKER] = Stock(TICKER, testing_prices[TICKER].iloc[0])
+    account = Account()
+    stocks = {}
+    for TICKER in tickers:
+        stocks[TICKER] = Stock(TICKER, testing_prices[TICKER].iloc[0])
 
 
-    # net_worth = trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, account, copy.deepcopy(stocks), testing_prices, predictions, args.verbose)
+    net_worth = trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, account, copy.deepcopy(stocks), testing_prices, predictions, args.verbose)
 
-    # final = net_worth[-1] + abs(account.min_balance)
-    # initial = abs(account.min_balance)
+    final = net_worth[-1] + abs(account.min_balance)
+    initial = abs(account.min_balance)
 
-    # print("Total return: ", ((final - initial) / initial) * 100, "%")
+    if args.verbose and args.single_company:
+        plt.plot(testing_prices[list(testing_prices.keys())[0]].keys(), predictions[list(testing_prices.keys())[0]])
+        plt.show()
 
-    print("Index return: ", base_return(market_cap), "%")
+    print("Total return: ", ((final - initial) / initial) * 100, "%")
 
-    # plt.plot(testing_prices[list(testing_prices.keys())[0]].keys(), net_worth)
-    # plt.show()
+    print("Index return: ", base_index_return(stocks, market_cap, testing_prices), "%")
+
+    print("Base reutrn: ", base_return(testing_prices), "%")
+
+    plt.plot(testing_prices[list(testing_prices.keys())[0]].keys(), net_worth)
+    plt.show()
 
 
 if __name__ == "__main__":

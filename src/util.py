@@ -111,13 +111,14 @@ def parse_snp_tickers():
 
     
 def get_market_cap(START_DATE, tickers):
-    START_DATE = START_DATE.strftime('%Y-%m-%d')
+    START_DATE = START_DATE.strftime("%Y-%m-%d")
     load_dotenv()
     api_key1 = os.getenv('FMP_API_KEY1')
     api_key2 = os.getenv('FMP_API_KEY2')
     api_key3 = os.getenv('FMP_API_KEY3')
     api_key4 = os.getenv('FMP_API_KEY4')
     api_key5 = os.getenv('FMP_API_KEY5')
+    api_key6 = os.getenv('FMP_API_KEY6')
 
     url = f'https://financialmodelingprep.com/api/v3/historical-market-capitalization/'
 
@@ -125,57 +126,42 @@ def get_market_cap(START_DATE, tickers):
     market_cap = {}
     
     api = api_key1
-    for ticker in tickers:
-        try:
-            response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
-            market_cap[ticker] = [int(x['marketCap']) for x in response]
-        except:
-            if api == api_key1:
-                api = api_key2
-            else:
-                api = api_key3
-            response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
-            market_cap[ticker] = [int(x['marketCap']) for x in response]
-    with open('data/market_cap.json', 'w') as f:
-        json.dump(market_cap, f)
-            
-    return market_cap
-
-
-def get_market_cap2(START_DATE, tickers):
-    load_dotenv()
-    api_key1 = os.getenv('FMP_API_KEY1')
-    api_key2 = os.getenv('FMP_API_KEY2')
-    api_key3 = os.getenv('FMP_API_KEY3')
-    api_key4 = os.getenv('FMP_API_KEY4')
-
-    url = f'https://financialmodelingprep.com/api/v3/historical-market-capitalization/'
-
-
-    market_cap = []
-    
-    api = api_key1
+    print('Using api key 1 to get market cap')
     for ticker in tickers:
         response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
-        if ("Error Message" in response):
+        while ("Error Message" in response):
             if api == api_key1:
-                print("changed to api key 2")
+                print("Using api key 2 to get market cap")
                 api = api_key2
             elif api == api_key2:
-                print("changed to api key 3")
+                print("Using api key 3 to get market cap")
                 api = api_key3
             elif api == api_key3:
-                print("changed to api key 4")
+                print("Using api key 4 to get market cap")
                 api = api_key4
+            elif api == api_key4:
+                print("Using api key 5 to get market cap")
+                api = api_key5
+            elif api == api_key5:
+                print("Using api key 6 to get market cap")
+                api = api_key6
             response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
-        market_cap.append(response)
+        market_cap[ticker] = [int(x['marketCap']) for x in response]
+
     with open('data/market_cap.json', 'w') as f:
         json.dump(market_cap, f)
-            
-    return market_cap
 
 
-def read_market_cap():
-    file = json.load(open('data/market_cap.json', 'r'))
-    print(file[0][0]['date'], file[0][-1]['date'])
-    
+def base_index_return(stocks, market_cap, testing_prices):
+    if len(stocks) == 1:
+        return ((testing_prices[list(stocks.keys())[0]].iloc[-1] - testing_prices[list(stocks.keys())[0]].iloc[0]) / testing_prices[list(stocks.keys())[0]].iloc[0]) * 100
+    final = sum([market_cap[ticker][0] for ticker in stocks.keys()])
+    initial = sum([market_cap[ticker][-1] for ticker in stocks.keys()])
+    return ((final - initial) / initial) * 100
+
+
+def base_return(testing_prices):
+    trade_volume = 500
+    final = sum([((testing_prices[ticker].iloc[-1] * trade_volume) / testing_prices[ticker].iloc[0]) for ticker in testing_prices.keys()])
+    initial = trade_volume * len(testing_prices)
+    return ((final - initial) / initial) * 100

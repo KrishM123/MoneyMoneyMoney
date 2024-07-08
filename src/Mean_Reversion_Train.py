@@ -42,7 +42,8 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
 
     def create_model():
         return tf.keras.models.Sequential([
-            tf.keras.layers.Flatten(input_shape=(8,), name='layers_flatten'),
+            tf.keras.layers.Input(shape=(8,)),
+            tf.keras.layers.Flatten(name='layers_flatten'),
             tf.keras.layers.Dense(64, activation='tanh'),
             tf.keras.layers.Dense(128, activation='tanh'),
             tf.keras.layers.Dense(256, activation='tanh'),
@@ -50,7 +51,7 @@ def train(MODEL_PATH, training_prices, MAX_HOLDING=100):
             tf.keras.layers.Dense(128, activation='tanh'),
             tf.keras.layers.Dense(64, activation='tanh'),
             tf.keras.layers.Dense(1),
-    ])
+        ])
 
     model = create_model()
     model.compile(optimizer='adam',

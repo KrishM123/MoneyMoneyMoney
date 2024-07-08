@@ -9,7 +9,7 @@ def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, accoun
     for pos in range(len(testing_prices[list(testing_prices.keys())[0]].keys())):
         for ticker in stocks.keys():
 
-            stocks[ticker].update_price(testing_prices[ticker][pos])
+            stocks[ticker].update_price(testing_prices[ticker].iloc[pos])
 
             stock = stocks[ticker]
 
@@ -19,7 +19,7 @@ def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, accoun
                 account.buy(stock, round(abs((MAX_TRANSACTION / stock.price) * predictions[ticker][pos][0]), 3))
                 sell_orders[str([int(inverse_time_effect3(MAX_HOLDING, predictions[ticker][pos][0])) + pos, ticker])] = [ticker, round(abs((MAX_TRANSACTION / stock.price) * math.sqrt(predictions[ticker][pos][0])), 3)]
 
-            # elif float(predictions[ticker][pos][0]) < -0.5:
+            # elif float(predictions[ticker][pos][0]) < -0.95:
             #     if verbose:
             #         print('Shorted ', ticker, 'at', stock.price, 'on', list(testing_prices[list(testing_prices.keys())[0]].keys())[pos])
             #     account.sell(stock, round(abs((MAX_TRANSACTION / stock.price) * abs(predictions[ticker][pos][0])), 3))
@@ -33,10 +33,3 @@ def trade_index_with_confidence_as_duration(MAX_HOLDING, MAX_TRANSACTION, accoun
 
         net_worth.append(account.net_worth())
     return net_worth
-
-
-
-def base_return(market_cap):
-    final = sum([market_cap[ticker][0] for ticker in market_cap.keys()])
-    initial = sum([market_cap[ticker][-1] for ticker in market_cap.keys()])
-    return ((final - initial) / initial) * 100
