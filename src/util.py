@@ -55,15 +55,17 @@ def normalize_average(old_answer, MAX_HOLDING):
         answer[pos] /= dp_max[pos]
     return answer
 
+# https://www.desmos.com/calculator/eohh87sbh2
 time_effect1 = lambda L, x: 1-(x/L)
 time_effect2 = lambda L, x: L/(x+L)
 time_effect3 = lambda L, x: (-1/(L**2))(x**2)+1
 time_effect3 = lambda L, x: -1/((x-L)**2)
 
-inverse_time_effect1 = lambda L, x: min(L, max(L(1-x), 0))
-inverse_time_effect2 = lambda L, x: min(L, max((L/x) - L, 0))
+# https://www.desmos.com/calculator/5pmo0kqh7z
+inverse_time_effect1 = lambda L, x: L * x
+inverse_time_effect2 = lambda L, x: L - (L / (1 + x))
 inverse_time_effect3 = lambda L, x: L * (x ** 2)
-inverse_time_effect4 = lambda L, x: min(max(L - math.sqrt((L**2) * x), 0), L)
+inverse_time_effect4 = lambda L, x: -L * (x) * (x-2)
 
 class Account():
     def __init__(self):
