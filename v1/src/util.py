@@ -1,7 +1,7 @@
 import math
 import json
 import requests
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 
 def get_sma(prices, MA):
@@ -40,32 +40,50 @@ def normalize_average(old_answer, MAX_HOLDING):
     window = [abs(x) for x in answer[:int(MAX_HOLDING/2)]]
     max_answer = max(window)
     dp_max = [max_answer] * int(MAX_HOLDING/2)
-    for pos in range(int(MAX_HOLDING/2), MAX_HOLDING):
+    for pos in range(int(MAX_HOLDING/2), len(answer)):
+        if len(window) == MAX_HOLDING:
+            if max_answer == window[0]:
+                max_answer = max(window[1:])
+            window.pop(0)
         window.append(abs(answer[pos]))
         max_answer = max(max_answer, abs(answer[pos]))
-        dp_max.append(abs(max_answer))
-    for pos in range(MAX_HOLDING, len(answer)):
-        if max_answer == window[0]:
-            max_answer = max(window[1:])
-        max_answer = max(max_answer, abs(answer[pos]))
-        window.pop(0)
-        window.append(abs(answer[pos]))
         dp_max.append(abs(max_answer))
     for pos in range(len(answer)):
         answer[pos] /= dp_max[pos]
     return answer
 
-# https://www.desmos.com/calculator/eohh87sbh2
+# https://www.desmos.com/calculator/hd4fk8gs9f
 time_effect1 = lambda L, x: 1-(x/L)
 time_effect2 = lambda L, x: L/(x+L)
 time_effect3 = lambda L, x: (-1/(L**2))(x**2)+1
-time_effect3 = lambda L, x: -1/((x-L)**2)
+time_effect4 = lambda L, x: ((x/L)-1) ** 2
+time_effect = {
+    1: time_effect1,
+    2: time_effect2,
+    3: time_effect3,
+    4: time_effect4
+}
 
 # https://www.desmos.com/calculator/5pmo0kqh7z
 inverse_time_effect1 = lambda L, x: L * x
 inverse_time_effect2 = lambda L, x: L - (L / (1 + x))
 inverse_time_effect3 = lambda L, x: L * (x ** 2)
 inverse_time_effect4 = lambda L, x: -L * (x) * (x-2)
+
+normal_distro = lambda s, x: (1/(s * math.sqrt(2 * math.pi))) * (math.e ** ((-1/2) * ((x/s) ** 2)))
+
+def gaussian_blur(data, sd):
+    gaussian_blurred_prices = []
+    for mean_pos in range(len(data)):
+        total = data.iloc[mean_pos] * normal_distro(sd, 0)
+        to_div = normal_distro(sd, 0)
+        for pos in range(-(sd * 3),  (sd * 3) + 1):
+            if mean_pos + pos > 0 and mean_pos + pos < len(data):
+                total += data.iloc[mean_pos + pos] * normal_distro(sd, pos)
+                to_div += normal_distro(sd, pos)
+        gaussian_blurred_prices.append(total * (1 / to_div))
+    return gaussian_blurred_prices
+
 
 class Account():
     def __init__(self):
