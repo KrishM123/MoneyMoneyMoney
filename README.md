@@ -1,1 +1,1 @@
-Watch https://watstreet.netlify.app/ for upcoming paper
+Watch https://watstreet.netlify.app/research for upcoming paper
