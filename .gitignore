@@ -1,5 +1,2 @@
-\venv
-\Models
-\src\__pycache__
-\.vscode
-.env
+\utils\__pycache__
+\mean-reversion\src\__pycache__
