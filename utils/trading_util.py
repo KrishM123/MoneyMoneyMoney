@@ -4,20 +4,25 @@ import requests
 
 class Account:
     def __init__(self):
-        self.balance = 0
+        self.balance = 0.0
         self.holdings = {}
-        self.min_balance = 0
+        self.min_balance = 0.0
 
     def buy(self, stock, quantity):
-        cost = stock.price * quantity
-        self.balance -= cost
+        cost = float(stock.price * quantity)
+        self.balance = float(self.balance - cost)
         self.min_balance = min(self.balance, self.min_balance)
-        self.holdings[stock] = self.holdings.get(stock, 0) + quantity
+        if stock not in self.holdings:
+            self.holdings[stock] = 0
+        self.holdings[stock] = self.holdings[stock] + quantity
         stock.add_holding(quantity)
 
     def sell(self, stock, quantity):
-        self.balance += stock.price * quantity
-        self.holdings[stock] = self.holdings.get(stock, 0) - quantity
+        revenue = float(stock.price * quantity)
+        self.balance = float(self.balance + revenue)
+        if stock not in self.holdings:
+            self.holdings[stock] = 0
+        self.holdings[stock] = self.holdings[stock] - quantity
         stock.remove_holding(quantity)
 
     def net_worth(self):
@@ -32,12 +37,12 @@ class Account:
     def __str__(self):
         holdings_str = "\n".join([f"{stock.name}: {quantity} shares" for stock, quantity in self.holdings.items()])
         return (
-            f"Balance: ${self.balance:.2f}\n"
-            f"Net Worth: ${self.net_worth():.2f}\n"
-            f"Total Profit: {self.profit():.2f}%\n"
+            f"Balance: ${float(self.balance):.2f}\n" +
+            f"Net Worth: ${float(self.net_worth()):.2f}\n" +
+            f"Total Profit: {float(self.profit()):.2f}%\n" +
             f"Holdings:\n{holdings_str}"
         )
-
+    
 
 class Stock:
     def __init__(self, name, price):

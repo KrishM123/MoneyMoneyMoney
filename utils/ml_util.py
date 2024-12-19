@@ -1,9 +1,10 @@
 import math
+import random
 
-def get_sma_sd_v(prices, window_sizes, MAX_HOLDING):
+def get_sma_sd_v(prices, window_sizes, MAX_FEATURE_KERNEL):
     all_features = []
     for size in window_sizes:
-        window = prices[MAX_HOLDING - size:MAX_HOLDING]
+        window = prices[MAX_FEATURE_KERNEL - size:MAX_FEATURE_KERNEL]
         total = sum(window)
         mean = total / size
         sma = [mean]
@@ -11,11 +12,11 @@ def get_sma_sd_v(prices, window_sizes, MAX_HOLDING):
         nume_sd_window = [(x-mean)**2 for x in window]
         nume_sd = sum(nume_sd_window)
         ind_sd = math.sqrt(nume_sd / size)
-        sd = [(prices[MAX_HOLDING - 1] - mean) / ind_sd]
+        sd = [(prices[MAX_FEATURE_KERNEL - 1] - mean) / ind_sd]
 
         volatility = [ind_sd * math.sqrt(size)]
 
-        for pos1 in range(MAX_HOLDING, len(prices)):
+        for pos1 in range(MAX_FEATURE_KERNEL, len(prices)):
             window.append(prices[pos1])
             total += window[-1] - window[0]
             window = window[1:]
@@ -74,6 +75,13 @@ def gaussian_blur(data, sd):
                 to_div += normal_distro(sd, pos)
         blurred_data.append(total * (1 / to_div))
     return blurred_data
+
+def gaussian_randomize(data, sd):
+    randomized_data = []
+    for value in data:
+        randomized_value = random.gauss(value, sd * value)
+        randomized_data.append(randomized_value)
+    return randomized_data
 
 def get_outlook(prices, MAX_HOLDING, TIME_EFFECT):
     outlook = []
