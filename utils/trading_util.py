@@ -68,7 +68,7 @@ def parse_snp_tickers():
         json.dump(tickers, f)
 
     
-def get_market_cap(START_DATE, tickers):
+def get_market_cap(path, START_DATE, tickers):
     START_DATE = START_DATE.strftime("%Y-%m-%d")
     load_dotenv()
     api_key1 = os.getenv('FMP_API_KEY1')
@@ -106,16 +106,21 @@ def get_market_cap(START_DATE, tickers):
             response = requests.get(url + f'{ticker}?&from={START_DATE}&apikey={api}').json()
         market_cap[ticker] = [int(x['marketCap']) for x in response]
 
-    with open('data/market_cap.json', 'w') as f:
+    with open(path, 'w') as f:
         json.dump(market_cap, f)
+    return market_cap
 
 
-def base_index_return(stocks, market_cap, testing_prices):
-    if len(stocks) == 1:
-        return ((testing_prices[list(stocks.keys())[0]].iloc[-1] - testing_prices[list(stocks.keys())[0]].iloc[0]) / testing_prices[list(stocks.keys())[0]].iloc[0]) * 100
-    final = sum([market_cap[ticker][0] for ticker in stocks.keys()])
-    initial = sum([market_cap[ticker][-1] for ticker in stocks.keys()])
-    return ((final - initial) / initial) * 100
+def base_index_return(stocks, market_cap):
+    total_market_caps = [
+        sum(market_cap[ticker][i] for ticker in stocks.keys())
+        for i in range(len(next(iter(market_cap.values()))))
+    ]
+    
+    base_value = total_market_caps[0]
+    normalized_market_caps = [100 * (value / base_value) for value in total_market_caps]
+    
+    return normalized_market_caps
 
 
 def base_return(testing_prices):

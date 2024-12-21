@@ -21,15 +21,15 @@ def get_sma_sd_v(prices, window_sizes, MAX_FEATURE_KERNEL):
             total += window[-1] - window[0]
             window = window[1:]
             mean = total / size
-            sma.append(mean)
+            sma.append(float(mean))
 
             nume_sd_window.append((prices[pos1] - mean) ** 2)
             nume_sd += nume_sd_window[-1] - nume_sd_window[0]
             nume_sd_window = nume_sd_window[1:]
             ind_sd = math.sqrt(nume_sd / size)
-            sd.append((prices[pos1] - mean) / ind_sd)
+            sd.append(float((prices[pos1] - mean) / ind_sd))
 
-            volatility.append(ind_sd * math.sqrt(size))
+            volatility.append(float(ind_sd * math.sqrt(size)))
         all_features.append(sma)
         all_features.append(sd)
         all_features.append(volatility)
