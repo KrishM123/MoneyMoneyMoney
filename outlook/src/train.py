@@ -27,10 +27,6 @@ def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING):
         features[pos] = features[pos][:-MAX_HOLDING - 1]
     n_outlook = n_outlook[max(FEATURE_KERNEL_SIZES):]
 
-    for i, feature in enumerate(features):
-        print(f"Feature {i}: Type = {type(feature)}, Element Type = {type(feature[0])}")
-
-
     x = np.array(transpose(features))
     y = np.array(n_outlook)
 
@@ -38,21 +34,42 @@ def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING):
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
     def create_model():
-        return tf.keras.models.Sequential([
-            tf.keras.layers.Input(shape=(len(FEATURE_KERNEL_SIZES) * 3,)),
-            tf.keras.layers.Flatten(name='layers_flatten'),
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(256, activation='relu'),
-            tf.keras.layers.Dense(256, activation='relu'),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(1, activation='tanh'),
-        ])
+        inputs = tf.keras.layers.Input(shape=(len(FEATURE_KERNEL_SIZES) * 3,))
+        
+        x = tf.keras.layers.Dense(256, activation='relu')(inputs)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        
+        residual_1 = x
+        x = tf.keras.layers.Dense(512, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(256, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Add()([x, residual_1])
+        
+        residual_2 = x
+        x = tf.keras.layers.Dense(512, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(256, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Add()([x, residual_2])
+        
+        x = tf.keras.layers.Dense(128, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(64, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
+        
+        outputs = tf.keras.layers.Dense(1, activation='tanh')(x)
+        
+        return tf.keras.models.Model(inputs, outputs)
 
     model = create_model()
-    model.compile(optimizer='adam',
-                loss='mean_absolute_error',)
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                loss='mean_absolute_error')
 
     model.fit(x=x_train, 
             y=y_train, 
