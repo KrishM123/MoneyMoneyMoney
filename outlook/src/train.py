@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath('../'))
 from utils.ml_util import *
 from utils.trading_util import *
 
-def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING):
+def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING, MAX_HISTORY):
     TIME_EFFECT = 3
 
     outlook = []
@@ -22,19 +22,17 @@ def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING):
         
     n_outlook = normalize_average(outlook, MAX_HOLDING * 3)
 
-    features = get_sma_sd_v(train_prices, FEATURE_KERNEL_SIZES, max(FEATURE_KERNEL_SIZES))
-    for pos in range(len(features)):
-        features[pos] = features[pos][:-MAX_HOLDING - 1]
-    n_outlook = n_outlook[max(FEATURE_KERNEL_SIZES):]
+    features = get_sma_sd_v(train_prices, FEATURE_KERNEL_SIZES, MAX_HISTORY)[:-MAX_HOLDING - 1]
+    n_outlook = n_outlook[MAX_HISTORY + max(FEATURE_KERNEL_SIZES) - 1:]
 
-    x = np.array(transpose(features))
+    x = np.array(features)
     y = np.array(n_outlook)
 
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
     def create_model():
-        inputs = tf.keras.layers.Input(shape=(len(FEATURE_KERNEL_SIZES) * 3,))
+        inputs = tf.keras.layers.Input(shape=(len(x_train[0]),))
         
         x = tf.keras.layers.Dense(256, activation='relu')(inputs)
         x = tf.keras.layers.BatchNormalization()(x)
@@ -73,7 +71,7 @@ def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING):
 
     model.fit(x=x_train, 
             y=y_train, 
-            epochs=70, 
+            epochs=30, 
             validation_data=(x_test, y_test), 
         )
 

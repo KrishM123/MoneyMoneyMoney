@@ -7,7 +7,7 @@ def simple_trade(account, stocks, test_prices, p_outlook):
             stock = stocks[ticker]
 
             stock.update_price(test_prices[ticker][pos])
-            if p_outlook[ticker][pos] > 0.6:
+            if p_outlook[ticker][pos] > 0.2:
                 account.buy(stock, abs(round((MAX_TRANSACTION * p_outlook[ticker][pos]), 3)))
             elif p_outlook[ticker][pos] < -0.6:
                 account.sell(stock, abs(round((MAX_TRANSACTION * p_outlook[ticker][pos]), 3)))
