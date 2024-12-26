@@ -1,2 +1,5 @@
 \utils\__pycache__
 \mean-reversion\src\__pycache__
+.env
+\outlook\models
+\outlook\eval_data
