@@ -1,7 +1,5 @@
 # Market Making Project
 
-This project implements a machine learning-based trading strategy using historical price data and technical indicators.
-
 ## Setup Instructions
 
 1. Create and activate a new conda environment with Python 3.10:
