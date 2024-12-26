@@ -3,3 +3,4 @@
 .env
 \outlook\models
 \outlook\eval_data
+**/__pycache__/
