@@ -11,14 +11,14 @@ from utils.ml_util import *
 from utils.trading_util import *
 
 def train(MODEL_PATH, train_prices, FEATURE_KERNEL_SIZES, MAX_HOLDING, MAX_HISTORY):
-    TIME_EFFECT = 3
+    TIME_EFFECT = 4
 
     outlook = []
     for pos1 in range(len(train_prices) - MAX_HOLDING):
         ans = 0
         for pos2 in range(1, MAX_HOLDING):
             ans += (train_prices[pos1 + pos2] - train_prices[pos1]) * time_effect[TIME_EFFECT](MAX_HOLDING, pos2)
-        outlook.append(ans / integrated_time_effect[TIME_EFFECT])
+        outlook.append(ans / time_effect_integrals[TIME_EFFECT](MAX_HOLDING))
         
     n_outlook = normalize_average(outlook, MAX_HOLDING * 3)
 

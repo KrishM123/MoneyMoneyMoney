@@ -182,7 +182,7 @@ def get_outlook(prices, MAX_HOLDING, TIME_EFFECT):
         ans = 0
         for pos2 in range(1, MAX_HOLDING):
             ans += (prices[pos1 + pos2] - prices[pos1]) * time_effect[TIME_EFFECT](MAX_HOLDING, pos2)
-        outlook.append(ans / integrated_time_effect[TIME_EFFECT])
+        outlook.append(ans / time_effect_integrals[TIME_EFFECT](MAX_HOLDING))
 
 
 def get_optimal_hold(prices, n_outlook, MAX_HOLDING, TIME_EFFECT):
@@ -220,27 +220,23 @@ def get_optimal_hold(prices, n_outlook, MAX_HOLDING, TIME_EFFECT):
                     lowest_pos = delay
             sell_time.append(lowest_pos / MAX_HOLDING)
 
-# https://www.desmos.com/calculator/jjttvu31pl
+# desmos.com/calculator/llzxki7h2o
 time_effect = {
-    1: lambda L, x: 1-(x/L),
-    2: lambda L, x: L/(x+L),
-    3: lambda L, x: -((x**2)/(L**2))+1,
-    4: lambda L, x: ((x/L)-1) ** 2
+    1: lambda N, x: 1-(x/N),
+    2: lambda N, x: -((x**2)/(N**2))+1,
+    3: lambda N, x: ((x/N)-1) ** 2,
+    4: lambda N, x: math.pow(math.e, -((math.log(1000))/(N^2)) * x**2)
 }
 
-integrated_time_effect = {
-    1: 50,
-    2: -100 * math.log(100) + 100 * math.log(200),
-    3: 200 / 3,
-    4: 100 / 3
+time_effect_integrals = {
+    1: lambda N: N/2,
+    2: lambda N: (2*N)/3,
+    3: lambda N: N/3,
+    4: lambda N: (
+        (math.sqrt(math.pi) * N) /
+        (2 * math.sqrt(math.log(100)))
+    ) * math.erf(math.sqrt(math.log(100)))
 }
 
-# https://www.desmos.com/calculator/jy32nucdmo
-inverse_time_effect = {
-    1: lambda L, x: L * x,
-    2: lambda L, x: L - (L / (1 + x)),
-    3: lambda L, x: L * (x ** 2),
-    4: lambda L, x: -L * (x) * (x-2)
-}
 
 normal_distro = lambda s, x: (1/(s * math.sqrt(2 * math.pi))) * (math.e ** ((-1/2) * ((x/s) ** 2)))

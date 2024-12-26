@@ -13,7 +13,6 @@ from outlook.src.train import train
 from outlook.src.infer import infer
 from outlook.src.trading import simple_trade
 
-# Command-line argument parsing
 parser = argparse.ArgumentParser(description="Stock analysis and trading simulation.")
 parser.add_argument("--no-train", action="store_true", help="Skip training models.")
 parser.add_argument("--no-chart", action="store_true", help="Skip plotting charts.")
