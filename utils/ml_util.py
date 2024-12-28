@@ -47,7 +47,7 @@ def get_sma_sd_v(prices, FEATURE_KERNAL_SIZES, MAX_HISTORY):
             volatility.append(float(ind_sd * math.sqrt(size)))
 
             if len(sma) == MAX_HISTORY:
-                size_features.append(sma + sd + volatility)
+                size_features.append(normalize_start(sma) + normalize_start(sd) + normalize_start(volatility))
                 sma.pop(0)
                 sd.pop(0)
                 volatility.pop(0)
@@ -57,6 +57,46 @@ def get_sma_sd_v(prices, FEATURE_KERNAL_SIZES, MAX_HISTORY):
     merged = [[item for col in row for item in col] for row in t_feat]
 
     return merged
+
+def normalize_start(numbers):
+    """
+    Normalizes a list of numbers to a scale of 1 to 100.
+    If the first number is 0, it's treated as 1 for relative scaling.
+    
+    Args:
+        numbers (list): List of numerical values
+        
+    Returns:
+        list: Normalized list where values are scaled between 1 and 100
+        
+    Example:
+        normalize([50, 100, 0]) returns [50, 100, 1]
+        normalize([0, 50, 100]) returns [1, 50, 100]
+    """
+    if not numbers:
+        return []
+    
+    first_number = numbers[0]
+    if first_number == 0:
+        first_number = 1
+        
+    # First normalize relative to the first number
+    relative_numbers = [num / first_number for num in numbers]
+    
+    # Find min and max for scaling (excluding the first number which is always 1)
+    min_val = min(relative_numbers)
+    max_val = max(relative_numbers)
+    
+    # Scale to 1-100 range
+    def scale_to_range(x):
+        if x == min_val:
+            return 1
+        elif x == max_val:
+            return 100
+        else:
+            return 1 + (x - min_val) * (99) / (max_val - min_val)
+    
+    return [scale_to_range(x) for x in relative_numbers]
 
 
 def transpose(matrix):
