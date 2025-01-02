@@ -1,5 +1,7 @@
 import math
 import random
+import numpy as np
+from datetime import timedelta
 
 
 def get_sma_sd_v(prices, FEATURE_KERNAL_SIZES, MAX_HISTORY):
@@ -80,14 +82,11 @@ def normalize_start(numbers):
     if first_number == 0:
         first_number = 1
         
-    # First normalize relative to the first number
     relative_numbers = [num / first_number for num in numbers]
     
-    # Find min and max for scaling (excluding the first number which is always 1)
     min_val = min(relative_numbers)
     max_val = max(relative_numbers)
     
-    # Scale to 1-100 range
     def scale_to_range(x):
         if x == min_val:
             return 1
@@ -260,6 +259,35 @@ def get_optimal_hold(prices, n_outlook, MAX_HOLDING, TIME_EFFECT):
                     lowest_pos = delay
             sell_time.append(lowest_pos / MAX_HOLDING)
 
+
+def calculate_sharpe_ratio(portfolio_values, min_balance, risk_free_rate=0.0, periods_per_year=252):
+    """
+    Calculate the Sharpe Ratio for a strategy, handling cases where portfolio starts at 0.
+
+    Parameters:
+        portfolio_values (list or np.array): List of portfolio net worth values over time.
+        risk_free_rate (float): Annual risk-free rate as a decimal (default is 0.0).
+        periods_per_year (int): Number of periods per year (default is 252 for daily data).
+
+    Returns:
+        float: Sharpe Ratio of the strategy.
+    """
+    portfolio_values = np.array(portfolio_values) + abs(min_balance)
+    
+    returns = np.diff(portfolio_values) / portfolio_values[:-1]
+    
+    risk_free_rate_daily = (1 + risk_free_rate) ** (1 / periods_per_year) - 1
+    excess_returns = returns - risk_free_rate_daily
+
+    mean_excess_return = np.mean(excess_returns)
+    std_deviation = np.std(excess_returns)
+
+    sharpe_ratio = mean_excess_return / std_deviation
+    sharpe_ratio_annualized = sharpe_ratio * np.sqrt(periods_per_year)
+
+    return sharpe_ratio_annualized
+
+
 # desmos.com/calculator/llzxki7h2o
 time_effect = {
     1: lambda N, x: 1-(x/N),
@@ -280,3 +308,10 @@ time_effect_integrals = {
 
 
 normal_distro = lambda s, x: (1/(s * math.sqrt(2 * math.pi))) * (math.e ** ((-1/2) * ((x/s) ** 2)))
+
+
+def get_atm_iv(ticker, date):
+    stock_price = ticker.history(start=date, end=date + timedelta(days=1))['Close'].iloc[0]
+    options = ticker.option_chain(ticker.options[0])
+    atm_call = options.calls.iloc[(options.calls['strike'] - stock_price).abs().argsort()[:1]]
+    return atm_call['impliedVolatility'].values[0]
